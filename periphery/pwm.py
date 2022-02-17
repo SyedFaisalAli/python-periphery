@@ -53,8 +53,8 @@ class PWM(object):
         if not isinstance(channel, int):
             raise TypeError("Invalid channel type, should be integer.")
 
-        chip_path = "/sys/class/pwm/pwmchip{}".format(chip)
-        channel_path = "/sys/class/pwm/pwmchip{}/pwm{}".format(chip, channel)
+        chip_path = os.path.join(os.environ.get("PWM_BASE_DIR", "/sys/class/pwm"), "pwmchip{}".format(chip))
+        channel_path = os.path.join(os.environ.get("PWM_BASE_DIR", "/sys/class/pwm"), "pwmchip{}/pwm{}".format(chip, channel))
 
         if not os.path.isdir(chip_path):
             raise LookupError("Opening PWM: PWM chip {} not found.".format(chip))
@@ -104,7 +104,7 @@ class PWM(object):
         if self._channel is not None:
             # Unexport the PWM channel
             try:
-                unexport_fd = os.open("/sys/class/pwm/pwmchip{}/unexport".format(self._chip), os.O_WRONLY)
+                unexport_fd = os.open(os.path.join(os.environ.get("PWM_BASE_DIR", "/sys/class/pwm"), "pwm/pwmchip{}/unexport".format(self._chip), os.O_WRONLY))
                 os.write(unexport_fd, "{:d}\n".format(self._channel).encode())
                 os.close(unexport_fd)
             except OSError as e:
